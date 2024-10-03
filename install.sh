@@ -19,9 +19,9 @@ case "${INIT_SYSTEM}" in
 		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
 		case "${distro}" in
 			artix)
-				CONF_PATH="/etc/runit/sv/" ;;
+				CONF_PATH="/etc/runit/sv" ;;
 			void)
-				CONF_PATH="/etc/sv/" ;;
+				CONF_PATH="/etc/sv" ;;
 		esac
 		cp -rv ./runit "${CONF_PATH}/nosystemd-swap"
 		;;

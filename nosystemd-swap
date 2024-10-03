@@ -3,7 +3,7 @@
 # echo wrappers
 INFO(){ echo -n "INFO: "; echo "$@" ;}
 WARN(){ echo -n "WARN: "; echo "$@" ;}
-ERRO(){ echo -n "ERRO: "; echo -n "$@" ; echo " Abort!"; exit 1;}
+ERROR(){ echo -n "ERROR: "; echo -n "$@" ; echo " Abort!"; exit 1;}
 
 ################################################################################
 # Helpers
@@ -26,7 +26,7 @@ help(){
 }
 ################################################################################
 # Initialization
-check_root_rights(){ [ "$UID" == "0" ] || ERRO "Script must be run as root!"; }
+check_root_rights(){ [ "$UID" == "0" ] || ERROR "Script must be run as root!"; }
 
 # get cpu count from cpuinfo
 cpu_count=$(nproc)
@@ -45,13 +45,13 @@ case "${INIT_SYSTEM}" in
 		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
 		case "${distro}" in
 			artix)
-				CONF_PATH="/etc/runit/sv/" ;;
+				CONF_PATH="/etc/runit/sv" ;;
 			void)
-				CONF_PATH="/etc/sv/" ;;
+				CONF_PATH="/etc/sv" ;;
 		esac
 		;;
 	dinit)
-		CONF_PATH="/etc/dinit.d/" ;;
+		CONF_PATH="/etc/dinit.d" ;;
 esac
 
 CONF="${CONF_PATH}/nosystemd-swap/swap.conf"
@@ -61,17 +61,17 @@ B_CONF="${WORK_DIR}/swap.conf"
 case "$1" in
     start)
         INFO "Check config"
-        [ ! -f "${CONF}" ] && ERRO "Missing config: ${CONF} - try to reinstall package"
+        [ ! -f "${CONF}" ] && ERROR "Missing config: ${CONF} - try to reinstall package"
         check_root_rights
         mkdir -p "${WORK_DIR}"
-        [ -f "${B_CONF}" ] && ERRO "nosystemd-swap already started!"
+        [ -f "${B_CONF}" ] && ERROR "nosystemd-swap already started!"
         INFO "Backup config"
         cp "${CONF}" "${B_CONF}"
         INFO "Load config"
         . "${B_CONF}"
 
         if YN "${zswap_enabled}"; then
-            [ ! -d /sys/module/zswap ] && ERRO "Zswap - not supported on current kernel"
+            [ ! -d /sys/module/zswap ] && ERROR "Zswap - not supported on current kernel"
             ZSWAP_P="/sys/module/zswap/parameters/"
             INFO "Zswap: backup current configuration: start"
             mkdir -p "${WORK_DIR}"/zswap/
@@ -96,7 +96,7 @@ case "$1" in
             INFO "Zram: check availability"
             if [ ! -d /sys/module/zram ]; then
                 INFO "Zram: not part of kernel, trying to find zram module"
-                modprobe -n zram || ERRO "Zram: can't find zram module!"
+                modprobe -n zram || ERROR "Zram: can't find zram module!"
                 # Wrapper, for handling zram initialization problems
                 for (( i = 0; i < 10; i++ )); do
                     if [ ! -d /sys/module/zram ]; then
@@ -120,7 +120,7 @@ case "$1" in
                         WARN "Zram: zramctl can't find free device"
                         INFO "Zram: using workaround hook for hot add"
                         [ ! -f /sys/class/zram-control/hot_add ] && \
-                            ERRO "Zram: this kernel doesn't support hot add zram device, please use 4.2+ kernels or see modinfo zram and make a modprobe rule"
+                            ERROR "Zram: this kernel doesn't support hot add zram device, please use 4.2+ kernels or see modinfo zram and make a modprobe rule"
                         NEW_ZRAM=$(cat /sys/class/zram-control/hot_add)
                         INFO "Zram: success: new device /dev/zram${NEW_ZRAM}"
                     ;;
@@ -210,11 +210,11 @@ case "$1" in
     ;;
     stop)
         check_root_rights
-        [ ! -f "${B_CONF}" ] && ERRO "runit-swap failed to start!"
+        [ ! -f "${B_CONF}" ] && ERROR "runit-swap failed to start!"
         INFO "Load config"
         . "${B_CONF}"
         if YN "${zswap_enabled}"; then
-            [ ! -d /sys/module/zswap ] && ERRO "Zswap - not supported on current kernel"
+            [ ! -d /sys/module/zswap ] && ERROR "Zswap - not supported on current kernel"
             ZSWAP_P=/sys/module/zswap/parameters/
             INFO "Zswap: restore configuration: start"
             mkdir -p "$WORK_DIR"/zswap/
