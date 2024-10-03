@@ -10,7 +10,9 @@ I then found runit-swap and while I really liked the idea of just being a wrappe
 
 ## Installation
 
-Clone this repository, and then run the `install.sh` script with the following command:
+Clone this repository, and make whatever necessary changes inside `swap.conf`. 
+
+Then run the `install.sh` script with the following command:
 ```
 $ sudo ./install.sh
 ```
