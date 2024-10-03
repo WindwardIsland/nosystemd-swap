@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 ################################################################################
 # echo wrappers
 INFO(){ echo -n "INFO: "; echo "$@" ;}
@@ -16,9 +16,9 @@ YN(){
 
 write(){
     DATA="$1" FILE="$2"
-    [ -z "$DATA" ] && return
-    [ -z "$FILE" ] && return
-    echo "$DATA" > "$FILE"
+    [ -z "${DATA}" ] && return
+    [ -z "${FILE}" ] && return
+    echo "${DATA}" > "${FILE}"
 }
 
 help(){
@@ -31,48 +31,70 @@ check_root_rights(){ [ "$UID" == "0" ] || ERRO "Script must be run as root!"; }
 # get cpu count from cpuinfo
 cpu_count=$(nproc)
 # get total ram size for meminfo
-ram_size=$(awk '/MemTotal:/ { print $2 }' /proc/meminfo)
+ram_size=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
 
-WORK_DIR=/var/run/runit/swap
-TMPDIR=$WORK_DIR
-CONF=/etc/runit/swap.conf
-B_CONF=$WORK_DIR/swap.conf
+# Find what the current init system is
+INIT_SYSTEM="$(readlink /sbin/init | sed 's/-init//')"
+
+# Directories where important files are stored
+WORK_DIR="/var/run/${INIT_SYSTEM}/nosystemd-swap"
+TMPDIR="${WORK_DIR}"
+
+case "${INIT_SYSTEM}" in
+	runit)
+		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
+		case "${distro}" in
+			artix)
+				CONF_PATH="/etc/runit/sv/" ;;
+			void)
+				CONF_PATH="/etc/sv/" ;;
+		esac
+		;;
+	dinit)
+		CONF_PATH="/etc/dinit.d/" ;;
+	openrc)
+		CONF_PATH="/etc/conf.d/" ;;
+esac
+
+CONF="${CONF_PATH}/nosystemd-swap/swap.conf"
+
+B_CONF="${WORK_DIR}/swap.conf"
 
 case "$1" in
     start)
         INFO "Check config"
-        [ ! -f $CONF ] && ERRO "Missing config: $CONF - try to reinstall package"
+        [ ! -f "${CONF}" ] && ERRO "Missing config: ${CONF} - try to reinstall package"
         check_root_rights
-        mkdir -p $WORK_DIR
-        [ -f $B_CONF ] && ERRO "runit-swap already started!"
+        mkdir -p "${WORK_DIR}"
+        [ -f "${B_CONF}" ] && ERRO "nosystemd-swap already started!"
         INFO "Backup config"
-        cp $CONF $B_CONF
+        cp "${CONF}" "${B_CONF}"
         INFO "Load config"
-        . $B_CONF
+        . "${B_CONF}"
 
-        if YN $zswap_enabled; then
+        if YN "${zswap_enabled}"; then
             [ ! -d /sys/module/zswap ] && ERRO "Zswap - not supported on current kernel"
-            ZSWAP_P=/sys/module/zswap/parameters/
+            ZSWAP_P="/sys/module/zswap/parameters/"
             INFO "Zswap: backup current configuration: start"
-            mkdir -p $WORK_DIR/zswap/
-            for file in $ZSWAP_P/*; do
-                cp $file $WORK_DIR/zswap/$(basename $file)
+            mkdir -p "${WORK_DIR}"/zswap/
+            for file in "${ZSWAP_P}"/*; do
+                cp "${file}" "${WORK_DIR}"/zswap/"$(basename "${file}")"
             done
             INFO "Zswap: backup current configuration: complete"
             INFO "Zswap: set new parameters: start"
-            write $zswap_enabled            $ZSWAP_P/enabled
-            write $zswap_compressor         $ZSWAP_P/compressor
-            write $zswap_max_pool_percent   $ZSWAP_P/max_pool_percent
-            write $zswap_zpool              $ZSWAP_P/zpool
+            write "${zswap_enabled}" "${ZSWAP_P}"/enabled
+            write "${zswap_compressor}" "${ZSWAP_P}"/compressor
+            write "${zswap_max_pool_percent}" "${ZSWAP_P}"/max_pool_percent
+            write "${zswap_zpool}" "${ZSWAP_P}"/zpool
             INFO "Zswap: set new parameters: complete"
         fi
 
-        if YN $zram_enabled; then
+        if YN "${zram_enabled}"; then
             [ -z "$zram_size" ] && zram_size=$((ram_size/4))K
             zram_streams=${zram_streams:-$cpu_count}
             zram_alg=${zram_alg:-"lz4"}
             zram_prio=${zram_prio:-"32767"}
-            zram_dev=""
+            zram_device=""
             INFO "Zram: check availability"
             if [ ! -d /sys/module/zram ]; then
                 INFO "Zram: not part of kernel, trying to find zram module"
@@ -91,161 +113,161 @@ case "$1" in
                 INFO "Zram: trying to initialize free device"
                 # zramctl is a external program -> return name of first free device
                 TMP=$(mktemp)
-                zramctl -f -a $zram_alg -t $zram_streams -s $zram_size &> $TMP
-                read -r OUTPUT < $TMP
-                rm $TMP
+                zramctl -f -a "${zram_alg}" -t "${zram_streams}" -s "${zram_size}" &> "${TMP}"
+                read -r OUTPUT < "${TMP}"
+                rm "${TMP}"
                 case "$OUTPUT" in
                     *"failed to reset: Device or resource busy"*) sleep 1 ;;
                     *"zramctl: no free zram device found"*)
                         WARN "Zram: zramctl can't find free device"
                         INFO "Zram: using workaround hook for hot add"
                         [ ! -f /sys/class/zram-control/hot_add ] && \
-                            ERRO "Zram: this kernel does not support hot add zram device, please use 4.2+ kernels or see modinfo zram and make a modprobe rule"
+                            ERRO "Zram: this kernel doesn't support hot add zram device, please use 4.2+ kernels or see modinfo zram and make a modprobe rule"
                         NEW_ZRAM=$(cat /sys/class/zram-control/hot_add)
-                        INFO "Zram: success: new device /dev/zram$NEW_ZRAM"
+                        INFO "Zram: success: new device /dev/zram${NEW_ZRAM}"
                     ;;
                     /dev/zram*)
                         [ -b "$OUTPUT" ] || continue
-                        zram_dev="$OUTPUT"
+                        zram_device="$OUTPUT"
                         break
                     ;;
                 esac
             done
-            INFO "Zram: initialized: $zram_dev"
-            mkdir -p $WORK_DIR/zram/
-            mkswap "$zram_dev" &> /dev/null && \
-                swapon -d -p $zram_prio "$zram_dev" && \
-                    ln -s $zram_dev $WORK_DIR/zram/
+            INFO "Zram: initialized: ${zram_device}"
+            mkdir -p "${WORK_DIR}"/zram/
+            mkswap "$zram_device" &> /dev/null && \
+                swapon -d -p "${zram_prio}" "${zram_device}" && \
+                    ln -s "${zram_device}" "$WORK_DIR"/zram/
         fi
 
-        if YN $swapfu_enabled; then
+        if YN "${swapfu_enabled}"; then
             swapfu_size=${swapfu_size:-"${ram_size}K"}
             swapfu_path=${swapfu_path:-"/var/swap"}
             swapfu_prio=${swapfu_prio:-"-1024"}
-            truncate -s $swapfu_size $swapfu_path
+            truncate -s "${swapfu_size}" "${swapfu_path}"
             INFO "swapF: searching free loop"
-            swapfu_loop=$(losetup -f --show $swapfu_path)
-            INFO "swapF: using $swapfu_loop"
+            swapfu_loop=$(losetup -f --show "${swapfu_path}")
+            INFO "swapF: using ${swapfu_loop}"
             # loop uses file descriptor, the file still exists, but does not have a path
             # When loop detaches a file, the file will be deleted.
-            rm $swapfu_path
-            mkswap $swapfu_loop &> /dev/null
-            swapon -p $swapfu_prio -d $swapfu_loop
+            rm "${swapfu_path}"
+            mkswap "${swapfu_loop}" &> /dev/null
+            swapon -p "${swapfu_prio}" -d "${swapfu_loop}"
             # set autoclear flag
-            losetup -d $swapfu_loop
-            mkdir -p $WORK_DIR/swapfu
-            ln -s $swapfu_loop $WORK_DIR/swapfu/
+            losetup -d "${swapfu_loop}"
+            mkdir -p "$WORK_DIR"/swapfu
+            ln -s "${swapfu_loop}" "$WORK_DIR"/swapfu/
         fi
 
-        if YN $swapfc_enabled; then
+        if YN "${swapfc_enabled}"; then
             get_free_swap_perc(){
                 calc(){
-                    # +1 prevent devide by zero
+                    # Add 1 in order to prevent divide by zero
                     echo $(( (${4}*100)/(${2}+1) ));
                 }
-                calc $(free -b | grep Swap:)
+                calc "$(free -b | grep Swap:)"
             }
             chunk_size=${swapfc_chunk_size:-"64M"}
             max_count=${swapfc_max_count:-"64"}
             free_swap_perc=${swapfc_free_swap_perc:-"15"}
             path=${swapfc_path:-"/var/swapfc/"}
             {
-                mkdir -p $path
-                mkdir -p $WORK_DIR/swapfc/
-                touch $WORK_DIR/swapfc/.lock
+                mkdir -p "${path}"
+                mkdir -p "$WORK_DIR"/swapfc/
+                touch "$WORK_DIR"/swapfc/.lock
                 allocated=0
-                while sleep 1 && [ -f $WORK_DIR/swapfc/.lock ]; do
+                while sleep 1 && [ -f "$WORK_DIR"/swapfc/.lock ]; do
                     if [[ $(get_free_swap_perc) < $free_swap_perc ]] && (( allocated < max_count )); then
                         allocated=$((allocated+1))
                         INFO "swapFC: free swap < $free_swap_perc - allocate chunk: $allocated"
-                        fallocate -l $chunk_size $path/$allocated
-                        chmod 0600 $path/$allocated
-                        mkswap $path/$allocated &> /dev/null
-                        swapon $path/$allocated
-                        ln -s $path/$allocated $WORK_DIR/swapfc/$allocated
+                        fallocate -l "${chunk_size}" "${path}"/${allocated}
+                        chmod 0600 "${path}"/$allocated
+                        mkswap "${path}"/${allocated} &> /dev/null
+                        swapon "${path}"/${allocated}
+                        ln -s "${path}"/$allocated "$WORK_DIR"/swapfc/$allocated
                     fi
-                    if [[ $(get_free_swap_perc) > $((free_swap_perc+40)) ]] && (( allocated > 2 )); then
+                    if [[ $(get_free_swap_perc) -gt $((free_swap_perc+40)) ]] && (( allocated > 2 )); then
                         INFO "swapFC: free swap > $((free_swap_perc+40)) - freeup chunk: $allocated"
-                        swapoff $WORK_DIR/swapfc/$allocated && \
-                            rm $path/$allocated $WORK_DIR/swapfc/$allocated
+                        swapoff "$WORK_DIR"/swapfc/$allocated && \
+                            rm "${path}"/${allocated} "$WORK_DIR"/swapfc/$allocated
                         allocated=$((allocated-1))
                     fi
                 done
             } &
         fi
 
-        if YN $swapd_auto_swapon; then
+        if YN "${swapd_auto_swapon}"; then
             INFO "swapD: searching swap devices"
-            mkdir -p $WORK_DIR/swapd/
+            mkdir -p "$WORK_DIR"/swapd/
             for device in $(blkid -t TYPE=swap -o device | grep -vE '(zram|loop)'); do
                 for used_device in $(swapon --show=NAME --noheadings); do
                     [ "$device" == "$used_device" ] && unset device
                 done
                 [ ! -b "$device" ] && continue
-                swapon -d $device &> /dev/null && \
-                    ln -s $device $WORK_DIR/swapd/ && \
+                swapon -d "$device" &> /dev/null && \
+                    ln -s "$device" "$WORK_DIR"/swapd/ && \
                         INFO "swapD: enabled device: $device"
             done
         fi
     ;;
     stop)
         check_root_rights
-        [ ! -f $B_CONF ] && ERRO "runit-swap failed to start!"
+        [ ! -f "${B_CONF}" ] && ERRO "runit-swap failed to start!"
         INFO "Load config"
-        . $B_CONF
-        if YN $zswap_enabled; then
+        . "${B_CONF}"
+        if YN "${zswap_enabled}"; then
             [ ! -d /sys/module/zswap ] && ERRO "Zswap - not supported on current kernel"
             ZSWAP_P=/sys/module/zswap/parameters/
             INFO "Zswap: restore configuration: start"
-            mkdir -p $WORK_DIR/zswap/
-            for file in $WORK_DIR/zswap/*; do
-                cp $file $ZSWAP_P/$(basename $file)
+            mkdir -p "$WORK_DIR"/zswap/
+            for file in "$WORK_DIR"/zswap/*; do
+                cp "$file" $ZSWAP_P/$(basename "$file")
             done
             INFO "Zswap: restore configuration: complete"
         fi
 
-        if YN $zram_enabled; then
-            for zram in $WORK_DIR/zram/*; do
-                [ ! -b $zram ] && continue
+        if YN "${zram_enabled}"; then
+            for zram in "$WORK_DIR"/zram/*; do
+                [ ! -b "$zram" ] && continue
                 INFO "Zram: removing: /dev/$(basename $zram)"
-                swapoff $zram && \
-                    zramctl -r $(basename $zram) && \
-                        rm $zram && \
+                swapoff "$zram" && \
+                    zramctl -r $(basename "$zram") && \
+                        rm "$zram" && \
                             INFO "Zram: removed: /dev/$(basename $zram)"
             done
         fi
 
-        if YN $swapfu_enabled; then
-            for device in $WORK_DIR/swapfu/*; do
+        if YN "${swapfu_enabled}"; then
+            for device in "$WORK_DIR"/swapfu/*; do
                 [ ! -b "$device" ] && continue
-                swapoff $device && \
-                    rm $device && \
+                swapoff "$device" && \
+                    rm "$device" && \
                         INFO "swapF: stopped /dev/$(basename $device)"
             done
         fi
 
-        if YN $swapfc_enabled; then
+        if YN "${swapfc_enabled}"; then
             path=${swapfc_path:-"/var/swapfc/"}
-            [ -f $WORK_DIR/swapfc/.lock ] && \
-                rm $WORK_DIR/swapfc/.lock
+            [ -f "$WORK_DIR"/swapfc/.lock ] && \
+                rm "$WORK_DIR"/swapfc/.lock
             sleep 2
-            for file in $WORK_DIR/swapfc/*; do
+            for file in "$WORK_DIR"/swapfc/*; do
                 [ ! -f "$file" ] && continue
-                swapoff $file && rm $file
-                rm $path/$(basename $file)
+                swapoff "$file" && rm "$file"
+                rm "$path"/$(basename "$file")
             done
-            [ -d $path ] && rm -rf $path
+            [ -d "$path" ] && rm -rf "$path"
         fi
 
-        if YN $swapd_auto_swapon; then
-            for device in $WORK_DIR/swapd/*; do
+        if YN "${swapd_auto_swapon}"; then
+            for device in "$WORK_DIR"/swapd/*; do
                 [ ! -b "$device" ] && continue
-                swapoff $device && \
-                    rm $device && \
+                swapoff "$device" && \
+                    rm "$device" && \
                         INFO "swapD: disabled device: $device"
             done
         fi
-        [ -d $WORK_DIR ] && rm -rf $WORK_DIR
+        [ -d "$WORK_DIR" ] && rm -rf "$WORK_DIR"
     ;;
 
     *) help ;;
