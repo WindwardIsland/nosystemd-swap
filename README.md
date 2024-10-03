@@ -15,7 +15,7 @@ Clone this repository, and then run the `install.sh` script with the following c
 $ sudo ./install.sh
 ```
 
-**NOTE**: The instructions for installation in this README use `sudo`, but substitute `sudo` for `doas` if you use that instead.
+**NOTE**: The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
 
 This will copy over the necessary service files to directories that your init system uses to manage services. Once that's done, we're now ready to enable and start the nosystemd-swap service for our init system in the next step.
 
@@ -37,4 +37,4 @@ Artix Linux (dinit flavor) (and possibly Chimera Linux as well, though untested)
 ```
 $ sudo dinitctl enable nosystemd-swap
 ```
-**NOTE**: As of right now, this only supports the runit and dinit init systems. OpenRC and s6 will be supported in the future. This means that this will work on Void, Artix (the runit and dinit flavors), possibly Chimera Linux, but not Gentoo or the OpenRC and s6 flavors of Artix.
+**NOTE**: As of right now, this only supports the runit and dinit init systems. OpenRC and s6 will be supported in the future. This means that this will work on Void, Artix (the runit and dinit flavors), and possibly Chimera Linux, but not Gentoo or the OpenRC and s6 flavors of Artix.
