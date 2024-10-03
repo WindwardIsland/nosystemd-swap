@@ -12,7 +12,12 @@ I then found runit-swap and while I really liked the idea of just being a wrappe
 
 Clone this repository, and make any necessary modifications inside `swap.conf`. 
 
-Then run the `install.sh` script with the following command:
+You can enable or disable zswap, zram, a universal swap file, or a chunked swap file by setting the corresponding value to either `0` or `1`.
+For example, if I wanted to only enable zram, I would only set `zram_enabled` to 1 and change the zram-related settings.
+
+**NOTE**: Leave the `swapd_auto_swapon` value to be 1 despite any other modifications you have made so that all available swap devices are always toggled on.
+
+Once you're done with your modifications inside `swap.conf`, you can now run the `install.sh` script with the following command:
 ```
 $ sudo ./install.sh
 ```
