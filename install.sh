@@ -19,18 +19,21 @@ case "${INIT_SYSTEM}" in
 		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
 		case "${distro}" in
 			artix)
-				CONF_PATH="/etc/runit/sv" ;;
+				INIT_PATH="/etc/runit/sv" ;;
 			void)
-				CONF_PATH="/etc/sv" ;;
+				INIT_PATH="/etc/sv" ;;
 		esac
-		cp -rv ./runit "${CONF_PATH}/nosystemd-swap"
+		SERVICE_FOLDER="nosystemd-swap"
+		cp -rv ./runit "${CONF_PATH}/${SERVICE_FOLDER}"
 		;;
 	dinit)
-		CONF_PATH="/etc/dinit.d/"
-		cp -rv ./dinit/* "${CONF_PATH}/nosystemd-swap"/
+		INIT_PATH="/etc/dinit.d"
+		SERVICE_FOLDER="nosystemd-swap-config"
+		mkdir -p "${CONF_PATH}/${SERVICE_FOLDER}"
+		cp -v ./dinit/nosystemd-swap "${CONF_PATH}/"
  		;;
 esac
 
-CONF="${CONF_PATH}/nosystemd-swap/swap.conf"
+CONF="${INIT_PATH}/${SERVICE_FOLDER}/swap.conf"
 
 cp -v ./swap.conf "${CONF}"
