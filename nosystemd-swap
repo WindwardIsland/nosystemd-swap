@@ -52,8 +52,6 @@ case "${INIT_SYSTEM}" in
 		;;
 	dinit)
 		CONF_PATH="/etc/dinit.d/" ;;
-	openrc)
-		CONF_PATH="/etc/conf.d/" ;;
 esac
 
 CONF="${CONF_PATH}/nosystemd-swap/swap.conf"
