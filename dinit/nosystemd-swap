@@ -1,5 +1,5 @@
 type = scripted
 command = nosystemd-swap start
 stop-command = nosystemd-swap stop
-restart = false
-logfile = /var/log/nosystemd-swap.log
+smooth-recovery = true
+waits-for = pseudofs
