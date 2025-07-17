@@ -12,8 +12,9 @@ I then found runit-swap and while I really liked the idea of just being a wrappe
 
 Clone this repository, and make any necessary modifications inside `swap.conf`. 
 
-You can enable or disable zswap, zram, a universal swap file, or a chunked swap file by setting the corresponding value to either `0` or `1`.
-For example, if I wanted to only enable zram, I would only set `zram_enabled` to 1 and change the zram-related settings.
+You can enable or disable zswap, zram, a universal swap file, or a chunked swap file by setting the corresponding value to either `0` or `1`. `0` disables the option, while `1` enables the option. 
+
+For example, if I wanted to only enable zram, I would only set `zram_enabled` to 1 and change the zram-related settings. Make sure to disable any other type of swap that you are **not** using (e.g. zswap, universal swap file, etc) by setting the corresponding option(s) to `0`.
 
 **NOTE**: Leave the `swapd_auto_swapon` value to be 1 despite any other modifications you have made so that all available swap devices are always toggled on.
 
@@ -24,7 +25,7 @@ $ sudo ./install.sh
 
 **NOTE**: The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
 
-This will copy over the necessary service files to directories that your init system uses to manage services. Once that's done, we're now ready to enable and start the nosystemd-swap service for our init system in the next step.
+This will copy over the necessary service files to directories that your init system uses to manage services. Once that's done, we're now ready to enable and start the `nosystemd-swap` service for our init system in the next step.
 
 ### Enabling the service
 #### runit
