@@ -57,7 +57,6 @@ $ sudo ln -s /etc/runit/sv/nosystemd-swap /run/runit/service/
 Artix Linux (dinit flavor) (and possibly Chimera Linux as well, though untested):
 ```
 $ sudo dinitctl enable nosystemd-swap
-$ sudo dinitctl start nosystemd-swap
 ```
 #### OpenRC
 
