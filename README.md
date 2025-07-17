@@ -11,15 +11,15 @@ I then found runit-swap and while I really liked the idea of just being a wrappe
 ## Installation
 ### Init System Support
 These are the currently supported init systems:
-- runit
-- dinit
-- OpenRC
+- [runit](https://smarden.org/runit/)
+- [dinit](https://github.com/davmac314/dinit/)
+- [OpenRC](https://wiki.gentoo.org/wiki/OpenRC)
 
 Support for these init systems will come in the near future:
-- s6/s6-rc
-- suite66
-- finit (possibility)
-- sinit (possibility)
+- [s6](https://skarnet.org/software/s6/)/[s6-rc](https://skarnet.org/software/s6-rc/)
+- [suite66](https://web.obarun.org/software/66/latest/)
+- [finit](https://troglobit.github.io/finit/) (possibility)
+- [sinit](https://core.suckless.org/sinit/) (possibility)
 
 ### Configuration/Copying Files Over
 > [!IMPORTANT]
