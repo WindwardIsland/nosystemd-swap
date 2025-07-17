@@ -114,7 +114,7 @@ case "$1" in
                 INFO "Zram: trying to initialize free device"
                 # zramctl is a external program -> return name of first free device
                 TMP=$(mktemp)
-                zramctl -f -a "${zram_alg}" -s "${zram_size}" &> "${TMP}"
+                zramctl -f -a "${zram_alg}" -s "${zram_size}" &> "${TMP}" || ERROR "zramctl command failed to run!"
                 read -r OUTPUT < "${TMP}"
                 rm "${TMP}"
                 case "$OUTPUT" in
