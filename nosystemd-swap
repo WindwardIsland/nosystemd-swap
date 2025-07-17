@@ -93,7 +93,6 @@ case "$1" in
 
         if YN "${zram_enabled}"; then
             [ -z "$zram_size" ] && zram_size=$((ram_size/4))K
-            zram_streams=${zram_streams:-$cpu_count}
             zram_alg=${zram_alg:-"lz4"}
             zram_prio=${zram_prio:-"32767"}
             zram_device=""
@@ -115,7 +114,7 @@ case "$1" in
                 INFO "Zram: trying to initialize free device"
                 # zramctl is a external program -> return name of first free device
                 TMP=$(mktemp)
-                zramctl -f -a "${zram_alg}" -t "${zram_streams}" -s "${zram_size}" &> "${TMP}"
+                zramctl -f -a "${zram_alg}" -s "${zram_size}" &> "${TMP}"
                 read -r OUTPUT < "${TMP}"
                 rm "${TMP}"
                 case "$OUTPUT" in
