@@ -10,24 +10,36 @@ I then found runit-swap and while I really liked the idea of just being a wrappe
 
 ## Installation
 
+These are the currently supported init systems:
+- runit
+- dinit
+- OpenRC
+
+Support for these init systems will come in the near future:
+- s6/s6-rc
+- suite66
+- finit (possibility)
+- sinit (possibility)
+
+> [!IMPORTANT]
+> The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
+
 Clone this repository, and make any necessary modifications inside `swap.conf`. 
 
 You can enable or disable zswap, zram, a universal swap file, or a chunked swap file by setting the corresponding value to either `0` or `1`. `0` disables the option, while `1` enables the option. 
 
 For example, if I wanted to only enable zram, I would only set `zram_enabled` to 1 and change the zram-related settings. Make sure to disable any other type of swap that you are **not** using (e.g. zswap, universal swap file, etc) by setting the corresponding option(s) to `0`.
 
-**NOTE**: Leave the `swapd_auto_swapon` value to be 1 despite any other modifications you have made so that all available swap devices are always toggled on.
+> [!IMPORTANT]
+> Leave the `swapd_auto_swapon` value to be 1 despite any other modifications you have made so that all available swap devices are always toggled on.
 
 Once you're done with your modifications inside `swap.conf`, you can now run the `install.sh` script with the following command:
 ```
 $ sudo ./install.sh
 ```
-
-**NOTE**: The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
-
 This will copy over the necessary service files to directories that your init system uses to manage services. Once that's done, we're now ready to enable and start the `nosystemd-swap` service for our init system in the next step.
 
-### Enabling the service
+### Enabling and starting the service
 #### runit
 
 Void Linux:
@@ -44,5 +56,12 @@ $ sudo ln -s /etc/runit/sv/nosystemd-swap /run/runit/service/
 Artix Linux (dinit flavor) (and possibly Chimera Linux as well, though untested):
 ```
 $ sudo dinitctl enable nosystemd-swap
+$ sudo dinitctl start nosystemd-swap
 ```
-**NOTE**: As of right now, this only supports the runit and dinit init systems. OpenRC and s6 will be supported in the future. This means that this will work on Void, Artix (the runit and dinit flavors), and possibly Chimera Linux, but not Gentoo or the OpenRC and s6 flavors of Artix.
+#### OpenRC
+
+Artix Linux (OpenRC flavor) (and possibly Gentoo Linux w/ OpenRC as well, though untested):
+```
+$ sudo rc-update add nosystemd-swap default
+$ sudo rc-service nosystemd-swap start
+```
