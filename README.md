@@ -21,7 +21,7 @@ Support for these init systems will come in the near future:
 - finit (possibility)
 - sinit (possibility)
 
-### Copying over necessary files
+### Configuration/Copying Files
 > [!IMPORTANT]
 > The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
 
