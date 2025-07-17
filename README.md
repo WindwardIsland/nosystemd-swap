@@ -9,7 +9,7 @@ There's always tools like [zramen](https://github.com/atweiden/zramen) or [zramd
 I then found runit-swap and while I really liked the idea of just being a wrapper shell script that uses `modprobe` and `zramctl` under the hood to create and enable zram, it unfortunately only supports runit and has not been updated in the last 8 years. Hence, this fork exists to be more up-to-date and to work on init systems other than runit.
 
 ## Installation
-
+### Init System Support
 These are the currently supported init systems:
 - runit
 - dinit
@@ -21,6 +21,7 @@ Support for these init systems will come in the near future:
 - finit (possibility)
 - sinit (possibility)
 
+### Copying over necessary files
 > [!IMPORTANT]
 > The instructions for installation in this README use `sudo`, but replace `sudo` with `doas` if you use that instead.
 
