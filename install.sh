@@ -24,16 +24,25 @@ case "${INIT_SYSTEM}" in
 				INIT_PATH="/etc/sv" ;;
 		esac
 		SERVICE_FOLDER="nosystemd-swap"
+		CONF="${INIT_PATH}/${SERVICE_FOLDER}/swap.conf"
+
 		cp -rv ./runit ${INIT_PATH}/${SERVICE_FOLDER}
 		;;
 	dinit)
 		INIT_PATH="/etc/dinit.d"
-		SERVICE_FOLDER="nosystemd-swap-config"
-		mkdir -p ${INIT_PATH}/${SERVICE_FOLDER}
+		CONF_FOLDER="nosystemd-swap-config"
+		CONF="${INIT_PATH}/${CONF_FOLDER}/swap.conf"
+
+		mkdir -p ${INIT_PATH}/${CONF_FOLDER}
 		cp -v ./dinit/nosystemd-swap "${INIT_PATH}/"
  		;;
-esac
+	openrc)
+		INIT_PATH="/etc/init.d"
+		CONF_FOLDER="/etc/conf.d/nosystemd-swap-config"
+		CONF="${CONF_FOLDER}/swap.conf"
 
-CONF="${INIT_PATH}/${SERVICE_FOLDER}/swap.conf"
+		mkdir -p ${CONF_FOLDER}
+		cp -v ./openrc/nosystemd-swap "${INIT_PATH}/"
+esac
 
 cp -v ./swap.conf "${CONF}"

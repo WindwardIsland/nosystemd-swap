@@ -1,0 +1,9 @@
+#!/usr/bin/openrc-run
+
+start() {
+	/usr/bin/nosystemd-swap start
+}
+
+stop() {
+	/usr/bin/nosystemd-swap stop
+}

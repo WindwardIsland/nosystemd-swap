@@ -50,8 +50,12 @@ case "${INIT_SYSTEM}" in
 				INIT_PATH="/etc/sv/nosystemd-swap" ;;
 		esac
 		;;
+
 	dinit)
 		INIT_PATH="/etc/dinit.d/nosystemd-swap-config" ;;
+
+	openrc)
+		INIT_PATH="/etc/conf.d/nosystemd-swap-config" ;;
 esac
 
 CONF="${INIT_PATH}/swap.conf"
@@ -210,7 +214,7 @@ case "$1" in
     ;;
     stop)
         check_root_rights
-        [ ! -f "${B_CONF}" ] && ERROR "runit-swap failed to start!"
+        [ ! -f "${B_CONF}" ] && ERROR "nosystemd-swap failed to start!"
         INFO "Load config"
         . "${B_CONF}"
         if YN "${zswap_enabled}"; then
