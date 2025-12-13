@@ -51,6 +51,10 @@ Artix Linux (runit flavor):
 ```
 $ sudo ln -s /etc/runit/sv/nosystemd-swap /run/runit/service/
 ```
+Devuan Linux:
+```
+$ sudo ln -s /etc/sv/nosystemd-swap /etc/service/
+```
 
 #### dinit
 

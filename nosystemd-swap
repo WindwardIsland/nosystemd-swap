@@ -42,11 +42,13 @@ TMPDIR="${WORK_DIR}"
 
 case "${INIT_SYSTEM}" in
 	runit)
-		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
+		distro="$(grep -m 1 "^ID=" /etc/os-release | sed 's/^ID=//; s/\"//g')"
 		case "${distro}" in
 			artix)
 				INIT_PATH="/etc/runit/sv/nosystemd-swap" ;;
 			void)
+				INIT_PATH="/etc/sv/nosystemd-swap" ;;
+			devuan)
 				INIT_PATH="/etc/sv/nosystemd-swap" ;;
 		esac
 		;;

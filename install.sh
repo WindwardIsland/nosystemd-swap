@@ -16,11 +16,13 @@ INIT_SYSTEM="$(readlink /sbin/init | sed 's/-init//')"
 
 case "${INIT_SYSTEM}" in
 	runit)
-		distro="$(grep -m 1 "ID=" /etc/os-release | sed 's/ID=//')"
+		distro="$(grep -m 1 "^ID=" /etc/os-release | sed 's/^ID=//; s/\"//g')"
 		case "${distro}" in
 			artix)
 				INIT_PATH="/etc/runit/sv" ;;
 			void)
+				INIT_PATH="/etc/sv" ;;
+			devuan)
 				INIT_PATH="/etc/sv" ;;
 		esac
 		SERVICE_FOLDER="nosystemd-swap"
