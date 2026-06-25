@@ -68,7 +68,7 @@ case "$1" in
         [ ! -f "${CONF}" ] && ERROR "Missing config: ${CONF} - try to reinstall package"
         check_root_rights
         mkdir -p "${WORK_DIR}"
-        [ -f "${B_CONF}" ] && ERROR "nosystemd-swap already started!"
+        [ -f "${B_CONF}" ] && . "${B_CONF}"
         INFO "Backup config"
         cp "${CONF}" "${B_CONF}"
         INFO "Load config"
