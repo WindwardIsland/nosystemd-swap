@@ -1,5 +1,7 @@
 type = scripted
 command = nosystemd-swap start
 stop-command = nosystemd-swap stop
+log-type = buffer
+log-buffer-size = 1073741824
 smooth-recovery = true
-waits-for = pseudofs
+depends-on = tmpfiles-setup
