@@ -1,3 +1,8 @@
 #!/bin/sh
 nosystemd-swap start
-exec pause
+
+if command -v pause >/dev/null 2>&1; then
+    exec pause
+else
+    exec sleep infinity
+fi
