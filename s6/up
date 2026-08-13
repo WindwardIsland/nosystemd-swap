@@ -1,0 +1,14 @@
+#!/usr/bin/execlineb -P
+define -s DIRECTIVES "n3 s2000000 T"
+
+pipeline -w {
+	ifelse { test -w /var/log } {
+		foreground { install -d -o s6log -g s6log /var/log/nosystemd-swap }
+		s6-setuidgid s6log exec -c s6-log -b -- ${DIRECTIVES} /var/log/nosystemd-swap
+	}
+	foreground { install -d -o s6log -g s6log /run/log/nosystemd-swap }
+	s6-setuidgid s6log exec -c s6-log -b -- ${DIRECTIVES} /run/log/nosystemd-swap
+}
+
+fdmove -c 2 1
+nosystemd-swap start

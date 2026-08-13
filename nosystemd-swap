@@ -38,7 +38,6 @@ INIT_SYSTEM="$(readlink /sbin/init | sed 's/-init//')"
 
 # Directories where important files are stored
 WORK_DIR="/var/run/${INIT_SYSTEM}/nosystemd-swap"
-TMPDIR="${WORK_DIR}"
 
 case "${INIT_SYSTEM}" in
 	runit)
@@ -46,9 +45,7 @@ case "${INIT_SYSTEM}" in
 		case "${distro}" in
 			artix)
 				INIT_PATH="/etc/runit/sv/nosystemd-swap" ;;
-			void)
-				INIT_PATH="/etc/sv/nosystemd-swap" ;;
-			devuan)
+			void | devuan)
 				INIT_PATH="/etc/sv/nosystemd-swap" ;;
 		esac
 		;;
@@ -58,6 +55,9 @@ case "${INIT_SYSTEM}" in
 
 	openrc)
 		INIT_PATH="/etc/conf.d/nosystemd-swap-config" ;;
+	
+	s6)
+		INIT_PATH="/etc/s6/config" ;;
 esac
 
 CONF="${INIT_PATH}/swap.conf"

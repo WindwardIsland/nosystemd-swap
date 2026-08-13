@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# The install script for nosystemd-swap. Currently only the runit and dinit init systems are supported. 
-# Support for openrc and s6 will come in the near future.
+# The install script for nosystemd-swap. 
+# Currently supports runit, OpenRC, s6, and dinit.
 
 # Make sure that this script is run with root permissions since it needs to copy over files to root-protected directories
 if [ "$UID" != "0" ]; then
@@ -20,9 +20,7 @@ case "${INIT_SYSTEM}" in
 		case "${distro}" in
 			artix)
 				INIT_PATH="/etc/runit/sv" ;;
-			void)
-				INIT_PATH="/etc/sv" ;;
-			devuan)
+			void | devuan)
 				INIT_PATH="/etc/sv" ;;
 		esac
 		SERVICE_FOLDER="nosystemd-swap"
@@ -45,6 +43,15 @@ case "${INIT_SYSTEM}" in
 
 		mkdir -p ${CONF_FOLDER}
 		cp -v ./openrc/nosystemd-swap "${INIT_PATH}/"
+		;;
+	s6)
+		INIT_PATH="/etc/s6/sv"
+		SERVICE_FOLDER="nosystemd-swap"
+		CONF_FOLDER="/etc/s6/config"
+		CONF="${CONF_FOLDER}/swap.conf"
+
+		cp -rv ./s6 ${INIT_PATH}/${SERVICE_FOLDER}
+		;;
 esac
 
 cp -v ./swap.conf "${CONF}"
