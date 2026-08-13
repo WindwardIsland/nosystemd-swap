@@ -14,9 +14,9 @@ These are the currently supported init systems:
 - [runit](https://smarden.org/runit/)
 - [dinit](https://github.com/davmac314/dinit/)
 - [OpenRC](https://wiki.gentoo.org/wiki/OpenRC)
+- [s6](https://skarnet.org/software/s6/)/[s6-rc](https://skarnet.org/software/s6-rc/)
 
 Support for these init systems will come in the near future:
-- [s6](https://skarnet.org/software/s6/)/[s6-rc](https://skarnet.org/software/s6-rc/)
 - [suite66](https://web.obarun.org/software/66/latest/)
 - [finit](https://troglobit.github.io/finit/) (possibility)
 - [sinit](https://core.suckless.org/sinit/) (possibility)
@@ -69,3 +69,15 @@ Artix Linux (OpenRC flavor) (and possibly Gentoo Linux w/ OpenRC as well, though
 $ sudo rc-update add nosystemd-swap default
 $ sudo rc-service nosystemd-swap start
 ```
+#### s6/s6-rc
+
+> [!IMPORTANT]
+> This assumes that you are using [`s6-frontend`](https://skarnet.org/software/s6-frontend)! Artix has this installed by default in its s6 flavor. If you do not, be sure to install it as the commands without the frontend differ drastically.
+
+Artix Linux (s6 flavor):
+- Synchronize the repository: `$ sudo s6 repo sync`
+- Check the status of `nosystemd-swap` in the `current` set: `$ sudo s6 set status nosystemd-swap`
+    - If it is `usable` (i.e. disabled), then change its status to `active` (i.e. enabled): `$ sudo s6 set enable nosystemd-swap`
+- Commit the changes that were made to the `current` set: `$ sudo s6 set commit`
+- Install the live database: `$ sudo s6 live install`
+- By default, services managed with s6-rc are *down*. To start the service: `$ sudo s6 live start nosystemd-swap`
