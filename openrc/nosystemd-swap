@@ -1,5 +1,9 @@
 #!/usr/bin/openrc-run
 
+depend() {
+	after etmpfiles-setup
+}
+
 start() {
 	/usr/bin/nosystemd-swap start
 }
