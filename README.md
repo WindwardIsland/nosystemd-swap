@@ -69,10 +69,10 @@ Artix Linux (OpenRC flavor) (and possibly Gentoo Linux w/ OpenRC as well, though
 $ sudo rc-update add nosystemd-swap default
 $ sudo rc-service nosystemd-swap start
 ```
-#### s6/s6-rc
+#### s6
 
 > [!IMPORTANT]
-> This assumes that you are using [`s6-frontend`](https://skarnet.org/software/s6-frontend)! Artix has this installed by default in its s6 flavor. If you do not, be sure to install it as the commands without the frontend differ drastically.
+> This assumes that you are using [`s6-frontend`](https://skarnet.org/software/s6-frontend)! If you are not, be sure to install it as the commands without the frontend differ drastically. Artix has this installed by default in its s6 flavor.
 
 Artix Linux (s6 flavor):
 - Synchronize the repository: `$ sudo s6 repo sync`
@@ -81,3 +81,24 @@ Artix Linux (s6 flavor):
 - Commit the changes that were made to the `current` set: `$ sudo s6 set commit`
 - Install the live database: `$ sudo s6 live install`
 - By default, services managed with s6-rc are *down*. To start the service: `$ sudo s6 live start nosystemd-swap`
+
+## Viewing The Logs
+
+### runit / s6
+```
+$ tail -f /var/log/nosystemd-swap/current
+```
+> [!IMPORTANT]
+> On s6/s6-rc, make sure your user is added to the `s6log` group! If your user is not added, they cannot view the logs!
+
+### dinit
+```
+$ sudo dinitctl catlog nosystemd-swap
+```
+
+### OpenRC
+OpenRC by default outputs *all* STDOUT and STDERR to the terminal when starting the service. This is also done during the boot sequence.
+
+## Dependencies
+
+`nosystemd-swap` depends on a service that mounts tmpfs, as it requires that to exist in order to copy files over there. All other init systems *except* for runit implement this service. This means that the dependency is not needed for runit.
