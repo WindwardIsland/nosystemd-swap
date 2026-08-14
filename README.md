@@ -16,10 +16,16 @@ These are the currently supported init systems:
 - [OpenRC](https://wiki.gentoo.org/wiki/OpenRC)
 - [s6](https://skarnet.org/software/s6/)/[s6-rc](https://skarnet.org/software/s6-rc/)
 
-Support for these init systems will come in the near future:
+Support for these init systems will come in the future (all of these are a possibility, but unsure):
 - [suite66](https://web.obarun.org/software/66/latest/)
-- [finit](https://troglobit.github.io/finit/) (possibility)
-- [sinit](https://core.suckless.org/sinit/) (possibility)
+- [SysVinit](https://wiki.gentoo.org/wiki/Sysvinit)
+- [BSD rc.d](https://docs.freebsd.org/en/articles/rc-scripting/) (FreeBSD, OpenBSD, NetBSD)
+- [finit](https://troglobit.github.io/finit/)
+- [sinit](https://core.suckless.org/sinit/)
+- [perp](http://b0llix.net/perp/)
+- [nosh](https://jdebp.uk/Softwares/nosh/)
+- [daemontools](https://cr.yp.to/daemontools.html)
+- [daemontools-encore](https://untroubled.org/daemontools-encore/)
 
 ### Configuration/Copying Files Over
 > [!IMPORTANT]
