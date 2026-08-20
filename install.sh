@@ -12,7 +12,7 @@ fi
 cp -v ./nosystemd-swap /usr/bin/
 
 # Find what the current init system is
-INIT_SYSTEM="$(readlink /sbin/init | sed 's/-init//')"
+INIT_SYSTEM="$(basename "$(readlink /sbin/init)" | sed 's/-init//')"
 
 case "${INIT_SYSTEM}" in
 	runit)
