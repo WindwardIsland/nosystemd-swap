@@ -34,7 +34,7 @@ cpu_count=$(nproc)
 ram_size=$(awk '/MemTotal:/ {print $2}' /proc/meminfo)
 
 # Find what the current init system is
-INIT_SYSTEM="$(readlink /sbin/init | sed 's/-init//')"
+INIT_SYSTEM="$(basename "$(readlink /sbin/init)" | sed 's/-init//')"
 
 # Directories where important files are stored
 WORK_DIR="/var/run/${INIT_SYSTEM}/nosystemd-swap"
