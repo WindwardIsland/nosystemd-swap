@@ -6,7 +6,7 @@ I had been looking for quite some time now for a good program on Linux that woul
 
 There's always tools like [zramen](https://github.com/atweiden/zramen) or [zram-init](https://github.com/vaeth/zram-init), but I always had issues with these tools not creating the amount of size for zram I specified, most likely since they initialize zram based on a fraction of your actual RAM amount. They also don't support **all** non-SystemD init systems, so I wanted a **single** solution that works on all of them without having to use multiple tools.
 
-I then found runit-swap and while I really liked the idea of just being a wrapper shell script that uses `modprobe` and `zramctl` under the hood to create and enable zram, it unfortunately only supports runit and has not been updated in at least a decade. Hence, this fork exists to be more up-to-date and to work on init systems other than runit.
+I then found runit-swap and while I really liked the idea of just being a wrapper shell script that uses `modprobe` and `zramctl` under the hood to create and enable zram, it unfortunately only supports runit and has not been updated in at least a decade. Hence, this fork exists to be more up-to-date and to work with init systems other than runit.
 
 ## Installation
 ### Init System Support
